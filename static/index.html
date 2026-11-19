@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyAI Studio Pro · 全功能本地创作工作台</title>
+<style>
+  :root {
+    --bg: #090b10;
+    --card: #131722;
+    --card-hover: #1b2030;
+    --border: #23293d;
+    --primary: #6366f1;
+    --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+    --accent: #10b981;
+    --text: #f8fafc;
+    --text-muted: #94a3b8;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    padding: 1.5rem;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  
+  /* 顶部导航 */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 0.8rem; }
+  .logo-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--primary-gradient);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+  .logo-text { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; }
+  .logo-badge {
+    background: #1e2538; border: 1px solid #333d59; color: #a5b4fc;
+    font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 999px; font-weight: 600;
+  }
+  .header-status {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 0.4rem 0.9rem; border-radius: 999px; font-size: 0.82rem;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; }
+
+  /* 模式切换 Tabs */
+  .mode-tabs {
+    display: flex; gap: 0.6rem; margin-bottom: 1.2rem;
+    background: var(--card); border: 1px solid var(--border);
+    padding: 0.35rem; border-radius: 12px; width: fit-content;
+  }
+  .tab-btn {
+    padding: 0.55rem 1.4rem; border: none; background: transparent;
+    color: var(--text-muted); font-size: 0.92rem; font-weight: 600;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    background: var(--primary); color: #fff;
+    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+  }
+
+  /* 主栅格 */
+  .main-grid {
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: 1.5rem;
+  }
+  @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+  
+  .panel {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+  }
+  
+  .field-label {
+    font-size: 0.84rem; font-weight: 700; color: var(--text-muted);
+    margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;
+  }
+  
+  textarea {
+    width: 100%; height: 110px; background: #0c0f17; border: 1px solid var(--border);
+    border-radius: 10px; padding: 0.85rem; color: var(--text); font-size: 0.95rem;
+    resize: none; outline: none; transition: border-color 0.2s; line-height: 1.5;
+  }
+  textarea:focus { border-color: var(--primary); }
+
+  /* 上传参考图区 (仅图生图模式) */
+  .upload-area {
+    border: 2px dashed #2f3852; background: #0c0f17;
+    border-radius: 10px; padding: 1rem; text-align: center;
+    cursor: pointer; margin-bottom: 1rem; transition: all 0.2s;
+    position: relative; overflow: hidden; min-height: 100px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .upload-area:hover { border-color: var(--primary); background: #131725; }
+  .upload-preview {
+    max-height: 180px; max-width: 100%; border-radius: 6px;
+    display: none; object-fit: contain; margin-bottom: 0.5rem;
+  }
+  .upload-actions { display: none; gap: 0.5rem; }
+
+  /* 选项卡片网格 */
+  .chips-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.45rem; margin-bottom: 1.2rem;
+  }
+  .chip {
+    background: #0c0f17; border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.55rem 0.4rem; text-align: center; font-size: 0.82rem;
+    cursor: pointer; transition: all 0.15s; user-select: none; color: #cbd5e1;
+  }
+  .chip:hover { background: var(--card-hover); border-color: #475569; }
+  .chip.active {
+    background: #231f47; border-color: var(--primary); color: #c7d2fe; font-weight: 700;
+  }
+
+  .range-box {
+    margin-bottom: 1.2rem; background: #0c0f17; padding: 0.75rem 1rem;
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  .range-box input[type="range"] {
+    width: 100%; accent-color: var(--primary); cursor: pointer;
+  }
+
+  /* 生成主按钮 */
+  .btn-submit {
+    width: 100%; padding: 0.95rem; border: none; border-radius: 10px;
+    background: var(--primary-gradient); color: #fff; font-size: 1.05rem;
+    font-weight: 700; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 0.5rem; transition: transform 0.15s, opacity 0.2s;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+  .btn-submit:hover { opacity: 0.95; transform: translateY(-1px); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* 结果展示区 */
+  .preview-box {
+    min-height: 440px; background: #0c0f17; border: 1px dashed var(--border);
+    border-radius: 12px; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; overflow: hidden;
+    position: relative;
+  }
+  .preview-img {
+    max-width: 100%; max-height: 520px; border-radius: 8px; object-fit: contain;
+  }
+  .loading-box { display: none; flex-direction: column; align-items: center; gap: 0.8rem; }
+  .spinner {
+    width: 48px; height: 48px; border: 3px solid rgba(99, 102, 241, 0.2);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .action-bar {
+    margin-top: 1rem; display: none; justify-content: space-between; align-items: center;
+  }
+  .btn-action {
+    background: #1e2538; border: 1px solid var(--border); color: var(--text);
+    padding: 0.5rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+    cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;
+  }
+  .btn-action:hover { background: var(--card-hover); border-color: #475569; }
+
+  /* 历史画廊 */
+  .gallery-section { margin-top: 2.5rem; }
+  .gallery-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 0.75rem; margin-top: 0.8rem;
+  }
+  .gallery-item {
+    position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border); cursor: pointer; transition: transform 0.15s;
+  }
+  .gallery-item:hover { transform: scale(1.04); border-color: var(--primary); }
+  .gallery-thumb { width: 100%; height: 100%; object-fit: cover; }
+  .gallery-tag {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.7); font-size: 0.68rem; padding: 0.2rem 0.4rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #cbd5e1;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- 头部 -->
+  <header>
+    <div class="brand">
+      <div class="logo-icon">✨</div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="logo-text">EasyAI Studio</span>
+          <span class="logo-badge">PRO ULTRA</span>
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">
+          RTX 4070 硬件加速 · Krea 2 艺术旗舰 + Z-Image 造相双引擎
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <a id="phone-link" href="#" target="_blank" style="text-decoration:none; color: #a5b4fc; background: #1a1e2d; border: 1px solid #333d59; padding: 0.35rem 0.8rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 0.35rem;">
+        <span id="phone-link-text">📱 手机访问: 本机地址</span>
+      </a>
+      <div class="header-status">
+        <span class="dot"></span>
+        <span id="active-model-text">Krea 2 Turbo 艺术旗舰已就绪</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 模式切换 Tabs -->
+  <div class="mode-tabs">
+    <button class="tab-btn active" data-mode="text2image">
+      <span>🎨 文本描述生图 (Text to Image)</span>
+    </button>
+    <button class="tab-btn" data-mode="image_edit">
+      <span>🪄 图生图 / 智能指令编辑 (Image Edit)</span>
+    </button>
+  </div>
+
+  <!-- 引擎切换 -->
+  <div id="engine-section">
+  <div class="field-label" style="margin-top: 0.2rem;">
+    <span>生图引擎</span>
+    <span id="engine-hint" style="font-size: 0.72rem; color: #34d399;">Krea 2 艺术旗舰 · 8~14 步精修，画质最稳</span>
+  </div>
+  <div class="chips-grid" id="engine-chips" style="margin-bottom: 1rem;">
+    <div class="chip active" data-engine="krea2">🎨 Krea 2 Turbo (艺术旗舰)</div>
+    <div class="chip" data-engine="zimage">⚡ Z-Image 造相 (8步极速)</div>
+    <div class="chip" data-engine="moss">🅼 MOSS-Image (文字排版)</div>
+  </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- 左侧控制面板 -->
+    <div class="panel">
+      <!-- 参考图上传区域 (图生图模式展示) -->
+      <div id="upload-wrapper" style="display: none;">
+        <div id="image-edit-tip" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.8rem; font-size: 0.78rem; color: #6ee7b7; line-height: 1.5;">
+          💡 <b>智能图生图特性</b>：上传原图，输入风格或重塑描述，以 Krea 2 艺术美学重绘细节！
+        </div>
+        <div class="field-label">
+          <span>上传参考原图</span>
+          <span style="font-size: 0.75rem; color: #6ee7b7;">支持输入指令智能改图</span>
+        </div>
+        <div class="upload-area" id="drop-zone">
+          <input type="file" id="file-input" accept="image/*" style="display: none;" />
+          <img id="upload-preview-img" class="upload-preview" alt="参考图预览" />
+          <div id="upload-placeholder">
+            <div style="font-size: 1.5rem; margin-bottom: 0.3rem;">📤</div>
+            <div style="font-size: 0.88rem; font-weight: 600;">点击或拖拽图片到此处上传</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">支持 PNG / JPG / WebP</div>
+          </div>
+          <div class="upload-actions" id="upload-actions">
+            <button class="btn-action" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="document.getElementById('file-input').click()">更换图片</button>
+            <button class="btn-action" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" onclick="clearUpload(event)">清除</button>
+          </div>
+        </div>
+
+        <div class="range-box" id="denoise-control">
+          <div class="field-label" style="margin-bottom: 0.4rem;">
+            <span>编辑重绘强度 (Denoise)</span>
+            <span id="denoise-val" style="color: var(--primary); font-weight: 700;">0.65</span>
+          </div>
+          <input type="range" id="denoise-slider" class="oc-input" min="0.3" max="0.9" step="0.05" value="0.65" style="width:100%; accent-color: var(--primary);" />
+          <div id="denoise-hint" style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
+            <span>微调细节 (0.3)</span>
+            <span>平衡改动 (0.65)</span>
+            <span>大幅重构 (0.9)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 提示词输入 -->
+      <div class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="prompt-label">输入画面构思描述 (支持中英文)</span>
+        <button id="btn-expand" type="button" title="把简短描述自动补全为完整的画面细节"
+          style="background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 7px; padding: 0.22rem 0.6rem; font-size: 0.74rem; font-weight: 700; cursor: pointer; transition: all 0.15s; flex-shrink: 0;">
+          ✨ 智能扩写
+        </button>
+      </div>
+      <textarea id="prompt-input" placeholder="例如：展示一款未来极简透明钛合金概念手机，悬浮在深色展台上，纯净工业设计，摄影级光影..."></textarea>
+      <div id="expand-tip" style="font-size: 0.72rem; color: var(--text-muted); margin-top: -0.5rem; margin-bottom: 0.9rem; line-height: 1.5; display: none;"></div>
+
+      <!-- 画幅比例 -->
+      <div class="field-label" id="ratio-label">画面比例</div>
+      <div class="chips-grid" id="ratio-chips">
+        <div class="chip active" data-ratio="16:9">16:9 电脑宽屏壁纸</div>
+        <div class="chip" data-ratio="1:1">1:1 正方形头像</div>
+        <div class="chip" data-ratio="9:16">9:16 手机竖屏海报</div>
+      </div>
+
+      <!-- 清晰度与原生模式 -->
+      <div class="field-label" id="quality-label">
+        <span>分辨率模式</span>
+        <span style="font-size: 0.72rem; color: #34d399;">二采全分辨率重绘 · 拒绝放大器伪影</span>
+      </div>
+      <div class="chips-grid" id="quality-chips">
+        <div class="chip active" data-quality="fast_1k">⚡ 1080p 全高清 (1920×1080)</div>
+        <div class="chip" data-quality="native_2k">🎯 2K 电影级 (2560×1440)</div>
+        <div class="chip" data-quality="ai_4k">💎 4K 原生采样 (3840×2160 · 约6分钟)</div>
+      </div>
+
+      <!-- 二采精炼开关 -->
+      <div id="secondpass-box" style="margin: 0.85rem 0; background: #0c0f17; border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.85rem; display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;">
+        <div>
+          <div id="sp-title" style="font-weight: 600; font-size: 0.84rem; color: #fbbf24;">🔁 二采精炼 (HiRes-Fix 二次采样)</div>
+          <div id="sp-desc" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">一采半分辨率起草 → 二采 4 步全分辨率重绘，更快且更锐利；关闭则单次全分辨率直出</div>
+        </div>
+        <input type="checkbox" id="secondpass-toggle" style="width: 18px; height: 18px; accent-color: #f59e0b; cursor: pointer; flex-shrink: 0;" />
+      </div>
+
+      <!-- 二采步数 -->
+      <div id="sp-steps-box" style="margin: -0.55rem 0 0.85rem; background: #0c0f17; border: 1px solid var(--border); border-top: none; border-radius: 0 0 10px 10px; padding: 0.6rem 0.85rem 0.7rem;">
+        <div class="field-label" style="margin-bottom: 0.3rem;">
+          <span>二采步数 (Second-pass Steps)</span>
+          <span id="sp-steps-display" style="color: var(--primary); font-weight: 700;">6 步</span>
+        </div>
+        <input type="range" id="sp-steps-slider" min="2" max="10" step="2" value="6" style="width: 100%; accent-color: var(--primary);" />
+        <div id="sp-steps-hint" style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
+          <span>轻快 (2)</span>
+          <span>均衡 (6)</span>
+          <span>极致 (10)</span>
+        </div>
+      </div>
+
+      <!-- 负向提示词（仅 MOSS-Image 使用，其他引擎为 CFG=1 蒸馏模型，负向不生效）-->
+      <div id="neg-prompt-box" style="margin: -0.4rem 0 0.85rem; display: none;">
+        <div class="field-label">
+          <span style="color: #a5b4fc;">负向提示词 (Negative)</span>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">留空用官方推荐</span>
+        </div>
+        <textarea id="neg-prompt-input" rows="2" placeholder="nsfw, worst quality, bad anatomy, watermark, jpeg artifact" style="width: 100%; box-sizing: border-box; background: #0c0f17; border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 0.75rem; color: var(--text-main, #e2e8f0); font-size: 0.82rem; resize: vertical; outline: none;"></textarea>
+      </div>
+
+      <!-- 人物一致性 LoRA（仅 Krea 2 图生图显示）-->
+      <div id="idlora-box" style="margin: -0.4rem 0 0.85rem; background: #0c0f17; border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.85rem; display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.6rem;">
+          <div>
+            <div id="idlora-title" style="font-weight: 600; font-size: 0.84rem; color: #a5b4fc;">🧬 人物一致性 LoRA</div>
+            <div id="idlora-desc" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">锁定参考图人物五官，换场景/换装不换脸（需 Krea 2 专用模型）</div>
+          </div>
+          <input type="checkbox" id="idlora-toggle" style="width: 18px; height: 18px; accent-color: #818cf8; cursor: pointer; flex-shrink: 0;" />
+        </div>
+        <div id="idlora-detail" style="display: none; margin-top: 0.7rem;">
+          <div class="field-label" style="margin-bottom: 0.3rem;">
+            <span>一致性强度 (LoRA)</span>
+            <span id="idlora-strength-display" style="color: #a5b4fc; font-weight: 700;">1.0</span>
+          </div>
+          <input type="range" id="idlora-strength" min="0" max="1.5" step="0.05" value="1.0" style="width: 100%; accent-color: #818cf8;" />
+          <div id="idlora-strength-hint" style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
+            <span>宽松 (0)</span><span>推荐 (1.0)</span><span>强 (1.5)</span>
+          </div>
+
+          <div id="idlora-boost-row" class="field-label" style="margin: 0.7rem 0 0.3rem;">
+            <span>参考贴合度 (ref_boost)</span>
+            <span id="idlora-boost-display" style="color: #a5b4fc; font-weight: 700;">3.0</span>
+          </div>
+          <input type="range" id="idlora-boost" min="1" max="8" step="0.5" value="3" style="width: 100%; accent-color: #818cf8; display: block;" />
+          <div id="idlora-boost-hint" style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
+            <span>自由 (1)</span><span>推荐 (3)</span><span>强锁脸 (8)</span>
+          </div>
+
+          <div id="idlora-ground-row" class="field-label" style="margin: 0.7rem 0 0.3rem;">
+            <span>接地分辨率 (grounding_px)</span>
+            <span id="idlora-ground-display" style="color: #a5b4fc; font-weight: 700;">768</span>
+          </div>
+          <input type="range" id="idlora-ground" min="384" max="1280" step="64" value="768" style="width: 100%; accent-color: #818cf8; display: block;" />
+          <div id="idlora-ground-hint" style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
+            <span>强改图 (384)</span><span>平衡 (768)</span><span>强相似 (1280)</span>
+          </div>
+
+          <select id="idlora-select" class="oc-input" style="margin-top: 0.7rem; width: 100%; padding: 0.45rem; background: #0a0e17; color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem;">
+            <option value="">自动选择（推荐）</option>
+          </select>
+          <div id="idlora-hint" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.45rem;">本机暂无一致性模型</div>
+        </div>
+      </div>
+
+
+      <!-- 高级大师调优抽屉 -->
+      <div id="advanced-drawer" style="margin-bottom: 1.2rem;">
+        <div class="field-label" style="cursor: pointer; color: #a5b4fc;" onclick="toggleAdvancedSettings()">
+          <span>⚙️ 展开细节大师调优 (采样步数 / 引导强度)</span>
+          <span id="adv-arrow">▼</span>
+        </div>
+        <div id="advanced-settings-box" style="display: none; background: #0c0f17; padding: 0.85rem; border: 1px solid var(--border); border-radius: 10px; margin-top: 0.4rem;">
+          <div id="steps-setting-box" style="margin-bottom: 0.8rem;">
+            <div class="field-label" style="margin-bottom: 0.3rem;">
+              <span>采样去噪步数 (Steps)</span>
+              <span id="steps-display" style="color: var(--primary); font-weight: 700;">8 步 (Krea 2 官方黄金收敛)</span>
+            </div>
+            <input type="range" id="steps-slider" min="4" max="14" step="2" value="8" style="width: 100%; accent-color: var(--primary);" />
+            <div id="steps-scale-hint" style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem;">
+              <span>极速草图 (4)</span>
+              <span>官方黄金收敛 (8)</span>
+              <span>超精细雕刻 (14)</span>
+            </div>
+          </div>
+          <div id="guidance-setting-box" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border);">
+            <div id="guidance-hint" style="font-size: 0.78rem; color: #a5b4fc; line-height: 1.5;">
+              ℹ️ <b>引导强度 (CFG)</b>：Krea 2 Turbo 采用官方蒸馏流匹配架构，<b>固定最佳 CFG = 1.0 自动咬合提示词</b>，无需手动调节即可获得最纯净的色彩与光影。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-generate" class="btn-submit">
+        <span id="btn-text">✨ 立即生成图片</span>
+      </button>
+    </div>
+
+    <!-- 右侧渲染展示区 -->
+    <div class="panel" style="display: flex; flex-direction: column;">
+      <div class="field-label">
+        <span>画布渲染监视器</span>
+        <span id="time-badge" style="color: var(--accent); font-weight: 700;"></span>
+      </div>
+
+      <div class="preview-box" id="preview-area">
+        <div class="loading-box" id="loading-box">
+          <div class="spinner"></div>
+          <div id="loading-stage-text" style="font-size: 0.95rem; font-weight: 600; color: #c7d2fe;">GPU 全力运算渲染中...</div>
+          <div id="timer-text" style="font-size: 0.82rem; color: var(--primary);">已耗时: 0 秒</div>
+          <div id="loading-hint-text" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.3rem;">正在进行时空去噪与细节雕刻</div>
+        </div>
+        <img id="main-preview" class="preview-img" style="display: none;" />
+        <div id="empty-state" style="color: #475569; font-size: 0.9rem; text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 0.3rem;">🖼️</div>
+          在左侧配置参数并点击生成，超清大片将在此呈现
+        </div>
+      </div>
+
+      <div class="action-bar" id="action-bar">
+        <span id="meta-text" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button id="btn-use-as-ref" class="btn-action">🪄 设为修图参考</button>
+          <a id="btn-download" class="btn-action" style="background: var(--primary); color: #fff;" download href="#">⬇️ 保存原图</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 历史作品画廊 -->
+  <div class="gallery-section">
+    <div class="field-label">
+      <span>最近生成的作品画廊 (点击卡片即刻回看或一键载入提示词)</span>
+      <span style="font-size: 0.75rem; color: var(--text-muted);">自动同步本地存储</span>
+    </div>
+    <div class="gallery-grid" id="gallery-grid"></div>
+  </div>
+</div>
+
+<script>
+  let currentMode = 'text2image';
+  let uploadedFilename = null;
+  let selectedRatio = '16:9';
+  let selectedQuality = 'fast_1k';
+  let selectedEngine = 'krea2';
+  let timerInterval = null;
+  let currentImageUrl = null;
+
+  function updateEngineAndModeUI() {
+    const btnText = document.getElementById('btn-text');
+    const stepsSlider = document.getElementById('steps-slider');
+    const stepsDisplay = document.getElementById('steps-display');
+    const stepsHint = document.getElementById('steps-scale-hint');
+    const imageEditTip = document.getElementById('image-edit-tip');
+    const uploadWrapper = document.getElementById('upload-wrapper');
+    const secondPassBox = document.getElementById('secondpass-box');
+    const spTitle = document.getElementById('sp-title');
+    const spDesc = document.getElementById('sp-desc');
+    const spToggle = document.getElementById('secondpass-toggle');
+    const spStepsBox = document.getElementById('sp-steps-box');
+    const spStepsSlider = document.getElementById('sp-steps-slider');
+    const spStepsDisplay = document.getElementById('sp-steps-display');
+    const spStepsHint = document.getElementById('sp-steps-hint');
+    function refreshSecondPassVisibility() {
+      spStepsBox.style.display = spToggle.checked ? 'block' : 'none';
+    }
+    function setSecondPassText() {
+      spTitle.innerText = '🔁 二采精炼 (HiRes-Fix 二次采样)';
+      refreshSecondPassDescForQuality();
+      spStepsSlider.min = 2; spStepsSlider.max = 10; spStepsSlider.step = 2;
+      if (!window.spStepsUserTouched) spStepsSlider.value = 6;
+      spStepsHint.innerHTML = '<span>轻快 (2)</span><span>均衡 (6)</span><span>极致 (10)</span>';
+      spStepsDisplay.innerText = `${spStepsSlider.value} 步`;
+      if (!window.spUserTouched) spToggle.checked = true;
+      refreshSecondPassVisibility();
+    }
+    const promptLabel = document.getElementById('prompt-label');
+    const promptInput = document.getElementById('prompt-input');
+
+    stepsSlider.min = 4; stepsSlider.max = 14; stepsSlider.step = 2;
+
+    // 恢复图片控件
+    document.getElementById('quality-chips').style.display = 'grid';
+    document.getElementById('ratio-chips').style.display = 'grid';
+    document.getElementById('ratio-label').style.display = 'block';
+    document.getElementById('quality-label').style.display = 'flex';
+    document.getElementById('advanced-drawer').style.display = 'block';
+    document.getElementById('engine-section').style.display = 'block';
+    // 恢复图片模式的按钮/播放器状态
+    document.getElementById('btn-use-as-ref').style.display = '';
+    const dlBtn = document.getElementById('btn-download');
+    if (dlBtn) { dlBtn.innerText = '⬇️ 保存原图'; dlBtn.removeAttribute('download'); dlBtn.href = '#'; }
+
+    if (currentMode === 'image_edit') {
+      uploadWrapper.style.display = 'block';
+      secondPassBox.style.display = 'flex';
+      setSecondPassText();
+      if (imageEditTip) imageEditTip.style.display = 'block';
+      promptLabel.innerText = '输入修图重塑描述 (例如：保留主体，换成金色外壳、赛博朋克光影)';
+      promptInput.placeholder = '例如：保留主体轮廓，将背景换成雪山日落，增加金属质感光影...';
+      btnText.innerText = '🪄 立即执行图生图重塑 (Krea 2)';
+
+      stepsSlider.value = 8;
+      stepsDisplay.innerText = '8 步 (Krea 2 官方黄金收敛)';
+      stepsHint.innerHTML = '<span>粗调 (4)</span><span>官方黄金收敛 (8)</span><span>超精细重绘 (14)</span>';
+    } else {
+      // 文本描述生图 (Text to Image)
+      uploadWrapper.style.display = 'none';
+      secondPassBox.style.display = 'flex';
+      setSecondPassText();
+      if (imageEditTip) imageEditTip.style.display = 'none';
+      promptLabel.innerText = '输入画面构思描述 (支持中英文)';
+      promptInput.placeholder = '例如：展示一款未来极简透明钛合金概念手机，悬浮在深色展台上，纯净工业设计，摄影级光影...';
+      btnText.innerText = '🎨 立即生成图片 (Krea 2 Turbo 艺术旗舰)';
+
+      stepsSlider.value = 8;
+      stepsDisplay.innerText = '8 步 (Krea 2 Turbo 官方黄金收敛)';
+      stepsHint.innerHTML = '<span>极速草图 (4)</span><span>官方黄金收敛 (8)</span><span>超精细雕刻 (14)</span>';
+    }
+    syncEngineUI();
+  }
+
+  // Z-Image / MOSS 约束：仅文生图；不满足时必须如实隐藏/禁用，避免引导与后端不一致
+  const ziChip = document.querySelector('#engine-chips .chip[data-engine="zimage"]');
+  const mossChip = document.querySelector('#engine-chips .chip[data-engine="moss"]');
+  const q2kChip = document.querySelector('#quality-chips .chip[data-quality="native_2k"]');
+  const q4kChip2 = document.querySelector('#quality-chips .chip[data-quality="ai_4k"]');
+  let mossReady = null;  // null = 尚未查询
+
+  async function checkMossReady() {
+    try {
+      const res = await fetch('/api/status');
+      const s = await res.json();
+      mossReady = !!s.is_moss_ready;
+    } catch (e) {
+      mossReady = null;
+      return;
+    }
+    if (!mossChip) return;
+    if (!mossReady) {
+      mossChip.title = 'MOSS-Image 权重尚未下载完成（moss_image_sft / qwen3.5_9b / flux2-vae_small）';
+      mossChip.style.opacity = '0.5';
+      // 若当前正停在 MOSS 上而模型缺失，退回 Krea 2
+      if (selectedEngine === 'moss') {
+        document.querySelector('#engine-chips .chip[data-engine="krea2"]').click();
+      }
+    } else {
+      mossChip.title = '5B DiT · 中英文字渲染与版式控制最强';
+      mossChip.style.opacity = '';
+    }
+  }
+  checkMossReady();
+
+  function syncEngineUI() {
+    const isZi = selectedEngine === 'zimage';
+    const isMoss = selectedEngine === 'moss';
+    const hint = document.getElementById('engine-hint');
+    const spBox = document.getElementById('secondpass-box');
+    const spStepsBox = document.getElementById('sp-steps-box');
+    const editTab = document.querySelectorAll('.mode-tabs .tab-btn')[1];
+    const q1kChip = document.querySelector('#quality-chips .chip[data-quality="fast_1k"]');
+
+    if (isMoss) {
+      hint.innerText = 'MOSS-Image · 中英文字渲染/排版最强，分辨率 720p / 1080p / 2K 与 Z-Image 一致';
+      // 图生图不支持
+      editTab.disabled = true;
+      editTab.style.opacity = '0.45';
+      editTab.style.cursor = 'not-allowed';
+      if (currentMode === 'image_edit') {
+        document.querySelectorAll('.mode-tabs .tab-btn')[0].click();
+        return;
+      }
+      // 三档分辨率与 Z-Image 对齐：720p / 1080p / 2K（宽高均为 16 的倍数）
+      const mossLabels = {
+        'fast_1k': { '16:9': '1280×720', '1:1': '1024×1024', '9:16': '720×1280' },
+        'native_2k': { '16:9': '1920×1080', '1:1': '1440×1440', '9:16': '1080×1920' },
+        'ai_4k': { '16:9': '2560×1440', '1:1': '2048×2048', '9:16': '1440×2560' },
+      };
+      q1kChip.innerText = `⚡ 极速 · 720p (${mossLabels['fast_1k'][selectedRatio] || '1280×720'})`;
+      q2kChip.innerText = `🎯 标准 · 1080p (${mossLabels['native_2k'][selectedRatio] || '1920×1080'})`;
+      q4kChip2.innerText = `💎 高清 · 2K (${mossLabels['ai_4k'][selectedRatio] || '2560×1440'})`;
+      q2kChip.style.display = '';
+      q4kChip2.style.display = '';
+      // 无二采（MOSS 为完整扩散模型，二采收益低）
+      spBox.style.display = 'none';
+      spStepsBox.style.display = 'none';
+      document.getElementById('neg-prompt-box').style.display = 'block';
+      // 按钮与步数文案
+      document.getElementById('btn-text').innerText = '🅼 立即生成图片 (MOSS-Image 文字排版)';
+      const ss = document.getElementById('steps-slider');
+      const sd = document.getElementById('steps-display');
+      const sh = document.getElementById('steps-scale-hint');
+      ss.min = 10; ss.max = 40; ss.step = 1;
+      if (!window.mossUserSteps) ss.value = 25;
+      sd.innerText = `${ss.value} 步 (MOSS 推荐 25 步)`;
+      sh.innerHTML = '<span>快速 (10)</span><span>推荐 (25)</span><span>精细 (40)</span>';
+      document.getElementById('guidance-hint').innerHTML = 'ℹ️ <b>引导强度 (CFG)</b>：MOSS-Image 是完整训练的非蒸馏模型，<b>固定 CFG = 2.5</b> 兼顾文字清晰度与画面自然度，无需手动调节；负向提示词在下方单独填写。';
+    } else if (isZi) {
+      hint.innerText = 'Z-Image 造相 · 8 步极速，中文文字渲染强 · 真 2K(2560×1440) 需选最右「高清」档';
+      // 图生图不支持
+      editTab.disabled = true;
+      editTab.style.opacity = '0.45';
+      editTab.style.cursor = 'not-allowed';
+      if (currentMode === 'image_edit') {
+        document.querySelectorAll('.mode-tabs .tab-btn')[0].click();
+        return;
+      }
+      // 三档分辨率（实测 8GB 显存上限 3584，2560 为性价比拐点）
+      const ziLabels = {
+        'fast_1k': { '16:9': '1280×720', '1:1': '1024×1024', '9:16': '720×1280' },
+        'native_2k': { '16:9': '1920×1080', '1:1': '1536×1536', '9:16': '1080×1920' },
+        'ai_4k': { '16:9': '2560×1440', '1:1': '2048×2048', '9:16': '1440×2560' },
+      };
+      q1kChip.innerText = `⚡ 极速 · 720p (${ziLabels['fast_1k'][selectedRatio] || '1280×720'} · 约10秒)`;
+      q2kChip.innerText = `🎯 标准 · 1080p (${ziLabels['native_2k'][selectedRatio] || '1920×1080'} · 约21秒)`;
+      q4kChip2.innerText = `💎 高清 · 2K 原生 (${ziLabels['ai_4k'][selectedRatio] || '2560×1440'} · 约48秒 · 真2K)`;
+      q2kChip.style.display = '';
+      q4kChip2.style.display = '';
+      // 无二采（开关框与步数滑杆是并列的两个元素，必须一起隐藏）
+      spBox.style.display = 'none';
+      spStepsBox.style.display = 'none';
+      document.getElementById('neg-prompt-box').style.display = 'none';
+      // 按钮与步数文案
+      document.getElementById('btn-text').innerText = '⚡ 立即生成图片 (Z-Image 造相 8步)';
+      const ss = document.getElementById('steps-slider');
+      const sd = document.getElementById('steps-display');
+      const sh = document.getElementById('steps-scale-hint');
+      ss.min = 8; ss.max = 12; ss.step = 1;
+      if (!window.ziUserSteps) ss.value = 8;
+      if (parseInt(ss.value) < 8) ss.value = 8;
+      sd.innerText = `${ss.value} 步 (Z-Image 造相推荐 8)`;
+      sh.innerHTML = '<span>推荐 (8)</span><span>均衡 (10)</span><span>精修 (12)</span>';
+      document.getElementById('guidance-hint').innerHTML = 'ℹ️ <b>引导强度 (CFG)</b>：Z-Image Turbo 为蒸馏加速模型，<b>固定 CFG = 1.0</b> 无需引导即可贴合提示词，无需手动调节；画面细节靠步数（8~12）控制。';
+    } else {
+      hint.innerText = 'Krea 2 艺术旗舰 · 8~14 步精修，画质最稳';
+      q1kChip.innerText = '⚡ 1080p 全高清 (1920×1080)';
+      q2kChip.innerText = '🎯 2K 电影级 (2560×1440)';
+      q4kChip2.innerText = '💎 4K 原生采样 (3840×2160 · 约6分钟)';
+      editTab.disabled = false;
+      editTab.style.opacity = '';
+      editTab.style.cursor = '';
+      q2kChip.style.display = '';
+      q4kChip2.style.display = '';
+      spBox.style.display = 'flex';
+      // 二采步数滑杆跟随开关状态恢复（默认开启则显示）
+      spStepsBox.style.display = document.getElementById('secondpass-toggle').checked ? 'block' : 'none';
+      document.getElementById('btn-text').innerText = currentMode === 'image_edit'
+        ? '🪄 立即执行图生图重塑 (Krea 2)'
+        : '🎨 立即生成图片 (Krea 2 Turbo 艺术旗舰)';
+      document.getElementById('neg-prompt-box').style.display = 'none';
+      const ss = document.getElementById('steps-slider');
+      const sd = document.getElementById('steps-display');
+      const sh = document.getElementById('steps-scale-hint');
+      sd.innerText = `${ss.value} 步 (Krea 2 Turbo 黄金收敛 8)`;
+      sh.innerHTML = currentMode === 'image_edit'
+        ? '<span>粗调 (4)</span><span>官方黄金收敛 (8)</span><span>超精细重绘 (14)</span>'
+        : '<span>极速草图 (4)</span><span>官方黄金收敛 (8)</span><span>超精细雕刻 (14)</span>';
+      document.getElementById('guidance-hint').innerHTML = 'ℹ️ <b>引导强度 (CFG)</b>：Krea 2 Turbo 采用官方蒸馏流匹配架构，<b>固定最佳 CFG = 1.0 自动咬合提示词</b>，无需手动调节即可获得最纯净的色彩与光影。';
+    }
+
+    // 人物一致性 LoRA：Krea 2 图生图锁脸；Z-Image 文生图用角色 LoRA
+    const idBox = document.getElementById('idlora-box');
+    const isKrea2Edit = (selectedEngine === 'krea2') && (currentMode === 'image_edit');
+    const isZiT2i = (selectedEngine === 'zimage') && (currentMode === 'text2image');
+    const showId = isKrea2Edit || isZiT2i;
+    idBox.style.display = showId ? 'block' : 'none';
+    if (showId) applyIdLoraMode(isZiT2i);
+  }
+
+  // 切换面板文案：Z-Image 走角色 LoRA（无 ref_boost / grounding 概念）
+  function applyIdLoraMode(isZi) {
+    document.getElementById('idlora-title').innerText = isZi ? '🧬 角色 LoRA（Z-Image）' : '🧬 人物一致性 LoRA';
+    document.getElementById('idlora-desc').innerText = isZi
+      ? '套用训练好的角色形象，保持同一人物跨图一致'
+      : '锁定参考图人物五官，换场景/换装不换脸（需 Krea 2 专用模型）';
+    document.getElementById('idlora-boost-row').style.display = isZi ? 'none' : 'flex';
+    document.getElementById('idlora-boost').style.display = isZi ? 'none' : 'block';
+    document.getElementById('idlora-boost-hint').style.display = isZi ? 'none' : 'flex';
+    document.getElementById('idlora-ground-row').style.display = isZi ? 'none' : 'flex';
+    document.getElementById('idlora-ground').style.display = isZi ? 'none' : 'block';
+    document.getElementById('idlora-ground-hint').style.display = isZi ? 'none' : 'flex';
+    if (idLoraLoaded) renderIdLoraOptions();
+    const sl = document.getElementById('idlora-strength');
+    const disp = document.getElementById('idlora-strength-display');
+    sl.min = '0'; sl.max = isZi ? '1.5' : '1.5'; sl.step = '0.05';
+    if (isZi) {
+      if (parseFloat(sl.value) < 0.5) sl.value = '0.9';
+      disp.innerText = sl.value;
+      document.getElementById('idlora-strength-hint').innerHTML = '<span>弱 (0)</span><span>推荐 (0.9)</span><span>强 (1.5)</span>';
+    } else {
+      disp.innerText = sl.value;
+      document.getElementById('idlora-strength-hint').innerHTML = '<span>宽松 (0)</span><span>推荐 (1.0)</span><span>强 (1.5)</span>';
+    }
+  }
+  updateEngineAndModeUI();
+
+  // ===== 人物一致性 LoRA 交互 =====
+  let idLoraLoaded = false;
+  let idLoraAll = [];
+  async function loadIdLoraList() {
+    if (idLoraLoaded) { renderIdLoraOptions(); return; }
+    idLoraLoaded = true;
+    const hint = document.getElementById('idlora-hint');
+    try {
+      const res = await fetch('/api/loras');
+      const data = await res.json();
+      if (!data.success) throw new Error('接口异常');
+      idLoraAll = data.loras || [];
+      renderIdLoraOptions();
+      if (idLoraAll.length === 0) {
+        hint.style.color = '#f87171';
+        hint.innerText = '未找到模型：请把 LoRA 放入 ComfyUI/models/loras';
+      }
+    } catch (e) {
+      hint.style.color = '#f87171';
+      hint.innerText = '读取 LoRA 列表失败：' + e.message;
+    }
+  }
+
+  // 按当前引擎过滤：Z-Image 只列 zimage/通用，Krea 2 只列 krea2/通用
+  function renderIdLoraOptions() {
+    const sel = document.getElementById('idlora-select');
+    const hint = document.getElementById('idlora-hint');
+    const isZi = selectedEngine === 'zimage';
+    const want = isZi ? 'zimage' : 'krea2';
+    while (sel.options.length > 1) sel.remove(1);
+    const list = idLoraAll.filter(x => x.engine === want || x.engine === null);
+    const idList = list.filter(x => x.is_id_lora);
+    const shown = idList.length ? idList : list;
+    shown.forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.name;
+      opt.innerText = `${item.is_id_lora ? '🧬 ' : ''}${item.name} (${item.size_mb} MB)`;
+      sel.appendChild(opt);
+    });
+    if (idLoraAll.length === 0) return;
+    const engineName = isZi ? 'Z-Image' : 'Krea 2';
+    if (shown.length === 0) {
+      hint.style.color = '#fbbf24';
+      hint.innerText = `没有适用于 ${engineName} 的 LoRA。请把对应模型放进 ComfyUI/models/loras`;
+    } else {
+      hint.style.color = 'var(--text-muted)';
+      hint.innerText = `已识别 ${shown.length} 个适用于 ${engineName} 的 LoRA，默认自动选择第一个`;
+    }
+  }
+
+  document.getElementById('idlora-toggle').addEventListener('change', (e) => {
+    document.getElementById('idlora-detail').style.display = e.target.checked ? 'block' : 'none';
+    if (e.target.checked) loadIdLoraList();
+    // 只有 Krea 2 图生图才需要把 denoise 拉到 1.0
+    const isZi = (selectedEngine === 'zimage');
+    syncDenoiseForIdLora(e.target.checked && !isZi);
+  });
+
+  // 一致性 LoRA 需要接近全量重绘（denoise≈1.0），否则原图会「拽住」衣服换不掉
+  function syncDenoiseForIdLora(on) {
+    const slider = document.getElementById('denoise-slider');
+    const hint = document.getElementById('denoise-hint');
+    const valEl = document.getElementById('denoise-val');
+    if (on) {
+      slider.min = '0.6'; slider.max = '1.0'; slider.step = '0.05';
+      if (parseFloat(slider.value) < 0.95) slider.value = '1.0';
+      valEl.innerText = slider.value;
+      if (hint) hint.innerHTML = '<span>轻改 (0.6)</span><span>推荐 (1.0 全重绘)</span><span>—</span>';
+    } else {
+      slider.min = '0.3'; slider.max = '0.9'; slider.step = '0.05';
+      if (parseFloat(slider.value) > 0.9) slider.value = '0.65';
+      valEl.innerText = slider.value;
+      if (hint) hint.innerHTML = '<span>微调细节 (0.3)</span><span>平衡改动 (0.65)</span><span>大幅重构 (0.9)</span>';
+    }
+  }
+  document.getElementById('idlora-strength').addEventListener('input', (e) => {
+    document.getElementById('idlora-strength-display').innerText = e.target.value;
+  });
+  document.getElementById('idlora-boost').addEventListener('input', (e) => {
+    document.getElementById('idlora-boost-display').innerText = e.target.value;
+  });
+  document.getElementById('idlora-ground').addEventListener('input', (e) => {
+    document.getElementById('idlora-ground-display').innerText = e.target.value;
+  });
+
+  // 用户手动改过二采开关后，切换模式不再覆盖其选择
+  document.getElementById('secondpass-toggle').addEventListener('change', () => {
+    window.spUserTouched = true;
+    document.getElementById('sp-steps-box').style.display = document.getElementById('secondpass-toggle').checked ? 'block' : 'none';
+  });
+  document.getElementById('sp-steps-slider').addEventListener('input', (e) => {
+    window.spStepsUserTouched = true;
+    document.getElementById('sp-steps-display').innerText = `${e.target.value} 步`;
+  });
+
+  // 模式切换 Tabs
+  document.querySelectorAll('.mode-tabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.mode-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = btn.dataset.mode;
+      updateEngineAndModeUI();
+    });
+  });
+
+  // 选项绑定
+  function refreshSecondPassDescForQuality() {
+    const el = document.getElementById('sp-desc');
+    el.innerText = selectedQuality === 'ai_4k'
+      ? '一采 1920 起草 → 二采 3840 原生重绘；4K 下关闭二采直采偶发主体重复，建议保持开启'
+      : '一采半分辨率起草 → 二采全分辨率重绘，步数越多细节越扎实；关闭则单次全分辨率直出';
+  }
+
+  function bindChips(containerId, callback) {
+    document.querySelectorAll(`#${containerId} .chip`).forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll(`#${containerId} .chip`).forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        callback(chip);
+      });
+    });
+  }
+
+  bindChips('ratio-chips', c => selectedRatio = c.dataset.ratio);
+  bindChips('engine-chips', c => {
+    selectedEngine = c.dataset.engine;
+    updateEngineAndModeUI();
+  });
+  bindChips('quality-chips', c => {
+    selectedQuality = c.dataset.quality;
+    refreshSecondPassDescForQuality();
+  });
+
+  // 滑块
+  const denoiseSlider = document.getElementById('denoise-slider');
+  const denoiseVal = document.getElementById('denoise-val');
+  denoiseSlider.addEventListener('input', (e) => denoiseVal.innerText = e.target.value);
+
+  // 高级细节调优抽屉
+  let showAdvanced = false;
+  function toggleAdvancedSettings() {
+    showAdvanced = !showAdvanced;
+    document.getElementById('advanced-settings-box').style.display = showAdvanced ? 'block' : 'none';
+    document.getElementById('adv-arrow').innerText = showAdvanced ? '▲' : '▼';
+  }
+
+  const stepsSlider = document.getElementById('steps-slider');
+  const stepsDisplay = document.getElementById('steps-display');
+  stepsSlider.addEventListener('input', (e) => {
+    const v = parseInt(e.target.value);
+    if (selectedEngine === 'zimage') {
+      window.ziUserSteps = true;
+      stepsDisplay.innerText = `${v} 步 (Z-Image 造相实时设定)`;
+    } else if (selectedEngine === 'moss') {
+      window.mossUserSteps = true;
+      stepsDisplay.innerText = `${v} 步 (MOSS-Image 实时设定)`;
+    } else {
+      stepsDisplay.innerText = `${v} 步 (Krea 2 Turbo 实时设定)`;
+    }
+  });
+
+  // 文件上传
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  dropZone.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'BUTTON') fileInput.click();
+  });
+
+  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#6366f1'; });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#2f3852'; });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#2f3852';
+    if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length) handleFileUpload(e.target.files[0]);
+  });
+
+  async function handleFileUpload(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        uploadedFilename = data.filename;
+        const preview = document.getElementById('upload-preview-img');
+        preview.src = data.preview_url;
+        preview.style.display = 'block';
+        document.getElementById('upload-placeholder').style.display = 'none';
+        document.getElementById('upload-actions').style.display = 'flex';
+      }
+    } catch (e) { alert('上传失败: ' + e.message); }
+  }
+
+  function clearUpload(e) {
+    e.stopPropagation();
+    uploadedFilename = null;
+    fileInput.value = '';
+    document.getElementById('upload-preview-img').style.display = 'none';
+    document.getElementById('upload-placeholder').style.display = 'block';
+    document.getElementById('upload-actions').style.display = 'none';
+  }
+
+  // 状态轮询
+  async function checkStatus() {
+    try {
+      const res = await fetch('/api/status');
+      const data = await res.json();
+      document.getElementById('active-model-text').innerText = data.active_model;
+    } catch (e) {}
+  }
+  setInterval(checkStatus, 5000);
+  checkStatus();
+
+  // 加载画廊
+  async function loadHistory() {
+    try {
+      const res = await fetch('/api/history');
+      const items = await res.json();
+      const grid = document.getElementById('gallery-grid');
+      grid.innerHTML = '';
+      items.forEach(item => {
+        const wrap = document.createElement('div');
+        wrap.className = 'gallery-item';
+        wrap.innerHTML = `<img class="gallery-thumb" src="${item.url}" alt="${item.filename}" /><div class="gallery-tag">${item.filename}</div>`;
+        wrap.onclick = () => showResult(item.url, item.filename);
+        grid.appendChild(wrap);
+      });
+    } catch (e) {}
+  }
+  loadHistory();
+
+  function showResult(url, metaStr) {
+    currentImageUrl = url;
+    const imgPreview = document.getElementById('main-preview');
+
+    imgPreview.src = url;
+    imgPreview.style.display = 'block';
+
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('loading-box').style.display = 'none';
+    document.getElementById('action-bar').style.display = 'flex';
+    document.getElementById('btn-download').href = url;
+    document.getElementById('btn-download').innerText = '⬇️ 保存原图';
+    if (metaStr) document.getElementById('meta-text').innerText = metaStr;
+  }
+
+  // “设为修图参考图”按钮
+  document.getElementById('btn-use-as-ref').addEventListener('click', async () => {
+    if (!currentImageUrl) return;
+    document.querySelectorAll('.mode-tabs .tab-btn')[1].click();
+    const fn = currentImageUrl.split('/').pop();
+    uploadedFilename = fn;
+    const preview = document.getElementById('upload-preview-img');
+    preview.src = currentImageUrl;
+    preview.style.display = 'block';
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('upload-actions').style.display = 'flex';
+  });
+
+  // 智能扩写：把简短描述补全为完整画面细节（本地规则引擎，秒回）
+  const EXPAND_KIND_NAMES = {
+    product: '产品', portrait: '人像', landscape: '风光', anime: '动漫',
+    text: '文字排版', food: '美食', architecture: '建筑空间'
+  };
+  let expandOriginal = null;  // 扩写前的原文，用于一键恢复
+
+  function setExpandButton(label) {
+    const btn = document.getElementById('btn-expand');
+    btn.innerText = label;
+  }
+
+  async function runExpand() {
+    const input = document.getElementById('prompt-input');
+    const tip = document.getElementById('expand-tip');
+    const raw = input.value.trim();
+    if (!raw) {
+      tip.style.display = 'block';
+      tip.style.color = '#f87171';
+      tip.innerText = '请先写一句简短的画面描述，再点智能扩写';
+      return;
+    }
+    setExpandButton('扩写中...');
+    document.getElementById('btn-expand').disabled = true;
+    try {
+      const res = await fetch('/api/expand_prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: raw, engine: selectedEngine })
+      });
+      if (!res.ok) throw new Error('扩写失败');
+      const data = await res.json();
+      tip.style.display = 'block';
+      if (data.skipped) {
+        tip.style.color = '#fbbf24';
+        tip.innerText = '⚠️ ' + (data.reason || '提示词已足够详细，未扩写');
+        setExpandButton('✨ 智能扩写');
+      } else {
+        expandOriginal = raw;
+        input.value = data.expanded;
+        input.dispatchEvent(new Event('input'));
+        tip.style.color = '#34d399';
+        tip.innerText = `✅ 已扩写（识别为「${EXPAND_KIND_NAMES[data.kind] || data.kind}」场景）。想撤回可再点一次按钮恢复原文。`;
+        setExpandButton('↩ 恢复原文');
+      }
+    } catch (err) {
+      tip.style.display = 'block';
+      tip.style.color = '#f87171';
+      tip.innerText = '扩写失败：' + err.message;
+      setExpandButton('✨ 智能扩写');
+    }
+    document.getElementById('btn-expand').disabled = false;
+  }
+
+  function restoreOriginal() {
+    const input = document.getElementById('prompt-input');
+    input.value = expandOriginal || '';
+    input.dispatchEvent(new Event('input'));
+    document.getElementById('expand-tip').style.display = 'none';
+    expandOriginal = null;
+    setExpandButton('✨ 智能扩写');
+  }
+
+  document.getElementById('btn-expand').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (expandOriginal !== null) restoreOriginal();
+    else runExpand();
+  });
+
+  // 主生成触发
+  document.getElementById('btn-generate').addEventListener('click', async () => {
+    const prompt = document.getElementById('prompt-input').value.trim();
+    if (!prompt) {
+      alert('请输入画面描述或动态指引！');
+      return;
+    }
+    if (currentMode === 'image_edit' && !uploadedFilename) {
+      alert('【图像编辑模式】需要先上传一张参考原图！');
+      return;
+    }
+
+    const btn = document.getElementById('btn-generate');
+    const loadingBox = document.getElementById('loading-box');
+    const emptyState = document.getElementById('empty-state');
+    const preview = document.getElementById('main-preview');
+    const actionBar = document.getElementById('action-bar');
+    const timerText = document.getElementById('timer-text');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span>⚡ 显卡全力加速处理中...</span>';
+    preview.style.display = 'none';
+    emptyState.style.display = 'none';
+    actionBar.style.display = 'none';
+    loadingBox.style.display = 'flex';
+
+    let sec = 0;
+    timerText.innerText = '已耗时: 0 秒';
+    const stageText = document.getElementById('loading-stage-text');
+    const hintText = document.getElementById('loading-hint-text');
+    stageText.innerText = 'GPU 全力运算渲染中...';
+    hintText.innerText = '正在分配算力并加载特征';
+
+    const spOn = document.getElementById('secondpass-toggle').checked;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      sec++;
+      timerText.innerText = `已耗时: ${sec} 秒`;
+      if (selectedEngine === 'zimage') {
+        // Z-Image 6B / 8 步：载入约 15s，采样约 8~20s，解码收尾约 5s
+        if (sec < 15) {
+          stageText.innerText = '正在载入 Z-Image 造相引擎...';
+          hintText.innerText = '分配模型显存并解析中英文提示词';
+        } else if (sec < 45) {
+          stageText.innerText = '造相扩散采样中 (8 步极速)...';
+          hintText.innerText = '逐层构建画面结构与文字排版';
+        } else {
+          stageText.innerText = '正在进行 VAE 解码与输出整理...';
+          hintText.innerText = '高精画质收尾中，马上就好，请稍候';
+        }
+        return;
+      }
+      if (selectedEngine === 'moss') {
+        // MOSS 5B + Qwen3.5-9B 文本编码器：首次切换需重新加载约 30~60s，随后每步约 1.5~3s
+        if (sec < 50) {
+          stageText.innerText = '正在载入 MOSS-Image 与 Qwen3.5 文本编码器...';
+          hintText.innerText = '低显存模式下按需搬运权重，首次加载会慢一些';
+        } else if (sec < 50 + parseInt(stepsSlider.value) * 2) {
+          stageText.innerText = `文字排版扩散采样中 (${stepsSlider.value} 步)...`;
+          hintText.innerText = '逐层构建画面结构与文字字形';
+        } else {
+          stageText.innerText = '正在进行 VAE 解码与输出整理...';
+          hintText.innerText = '高精画质收尾中，马上就好，请稍候';
+        }
+        return;
+      }
+      const is4k = selectedQuality === 'ai_4k';
+      const draftEnd = is4k ? 110 : 70;
+      const sampleEnd = is4k ? 560 : (selectedQuality === 'native_2k' ? 90 : 70);
+      if (sec < 20) {
+        stageText.innerText = '正在载入引擎与提示词语义编码...';
+        hintText.innerText = '分配高精度模型显存并解析特征';
+      } else if (spOn && sec < draftEnd) {
+        stageText.innerText = is4k ? '一采：1920×1080 起草构图...' : '一采：半分辨率快速起草构图...';
+        hintText.innerText = '先定大形与光影分布，为二采打底';
+      } else if (sec < sampleEnd) {
+        stageText.innerText = spOn
+          ? (is4k ? '二采：3840 原生重绘微观细节...' : '二采：全分辨率重绘微观细节...')
+          : (is4k ? '深度去噪计算中 (3840 原生采样)...' : '深度去噪计算中 (DiT 扩散采样)...');
+        hintText.innerText = spOn ? '在起草稿上补充纹理、锐度与真实质感' : '正在逐层雕刻光影、构图与微观细节';
+      } else {
+        stageText.innerText = '正在进行 VAE 解码与输出整理...';
+        hintText.innerText = '高精画质收尾中，马上就好，请稍候';
+      }
+    }, 1000);
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: currentMode,
+          engine: selectedEngine,
+          prompt: prompt,
+          ratio: selectedRatio,
+          resolution_mode: selectedQuality,
+          ref_image: (currentMode === 'image_edit') ? uploadedFilename : null,
+          denoise: parseFloat(denoiseSlider.value),
+          custom_steps: parseInt(stepsSlider.value),
+          enable_second_pass: document.getElementById('secondpass-toggle').checked,
+          second_pass_steps: parseInt(document.getElementById('sp-steps-slider').value),
+          enable_id_lora: ((currentMode === 'image_edit' && selectedEngine === 'krea2') || (currentMode === 'text2image' && selectedEngine === 'zimage')) && document.getElementById('idlora-toggle').checked,
+          id_lora_name: (document.getElementById('idlora-select')?.value || null),
+          id_lora_strength: parseFloat(document.getElementById('idlora-strength')?.value || '1.0'),
+          id_lora_ref_boost: parseFloat(document.getElementById('idlora-boost')?.value || '3.0'),
+          id_lora_grounding_px: parseInt(document.getElementById('idlora-ground')?.value || '768'),
+          negative_prompt: (document.getElementById('neg-prompt-input')?.value || '')
+        })
+      });
+
+      clearInterval(timerInterval);
+      if (!res.ok) {
+        const err = await res.json();
+        alert('处理失败: ' + (err.detail || '未知错误'));
+        emptyState.style.display = 'block';
+        loadingBox.style.display = 'none';
+      } else {
+        const data = await res.json();
+        const targetUrl = data.media_url || data.image_url;
+        showResult(targetUrl, `耗时 ${data.elapsed}s · ${data.model_used}`);
+        document.getElementById('time-badge').innerText = `本次耗时: ${data.elapsed}s`;
+        loadHistory();
+      }
+    } catch (e) {
+      clearInterval(timerInterval);
+      alert('连接异常: ' + e.message);
+      emptyState.style.display = 'block';
+      loadingBox.style.display = 'none';
+    } finally {
+      btn.disabled = false;
+      updateEngineAndModeUI();
+    }
+  });
+
+  // 手机访问地址跟随实际端口与主机，换端口/换 IP 都不用改代码
+  (function () {
+    var host = location.hostname;
+    if (!host) host = location.hostname || 'localhost';
+    var port = location.port || '7860';
+    var link = document.getElementById('phone-link');
+    var label = document.getElementById('phone-link-text');
+    if (link) link.href = 'http://' + host + ':' + port;
+    if (label) label.textContent = '📱 手机访问: ' + host + ':' + port;
+  })();
+</script>
+</body>
+</html>
+
+

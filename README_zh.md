@@ -117,4 +117,8 @@ FastAPI + 原生 JS 前端 + ComfyUI HTTP API（`/prompt` 提交 + `/history` �
 
 ## 许可
 
-MIT
+[LICENSE](LICENSE) 中的 MIT 协议**仅适用于本仓库原创代码**（后端、前端、脚本、文档），不适用于模型。
+
+本仓库不包含任何模型权重，权重由使用者自行准备。第三方模型许可见 [NOTICE](NOTICE)：
+Z-Image 与 MOSS 为 Apache-2.0，但 **Krea 2 使用其自定义 Community License**，
+**4x-UltraSharp 为 CC BY-NC-SA 4.0（禁止商用）**。商用前请核对所用权重的许可。

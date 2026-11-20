@@ -118,4 +118,11 @@ FastAPI + vanilla JS frontend + ComfyUI HTTP API (`/prompt` to submit, `/history
 
 ## License
 
-MIT
+The MIT license in [LICENSE](LICENSE) applies **only to the original code in this
+repository** (server, frontend, scripts, docs) — not to the models.
+
+This repository does not ship any weights; users supply their own. Refer to
+[NOTICE](NOTICE) for third-party model licenses. In short: Z-Image and MOSS are
+Apache-2.0, but **Krea 2 uses its own Community License** and **4x-UltraSharp is
+CC BY-NC-SA 4.0 (non-commercial)**. Check the license of each checkpoint you use,
+especially for commercial work.

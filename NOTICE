@@ -1,0 +1,47 @@
+Third-party model notices
+=========================
+
+The MIT license in LICENSE covers only the original code in this repository
+(server.py, static/index.html,启动.bat, and documentation).
+
+This repository does **not** bundle any model weights. Users download and place
+the weights themselves. Those weights are governed by their own licenses, which
+are **not** MIT. Summary below — always read the license shipped with the exact
+checkpoint you download.
+
+1) Krea 2 Turbo — krea/Krea-2-Turbo
+   License : Krea 2 Community License Agreement (custom, NOT MIT / NOT Apache)
+   URL     : https://krea.ai/krea-2-licensing
+   Notes   : gated model; commercial use only below a company-wide annual
+             revenue threshold (USD 1,000,000); deployers must implement content
+             filtering; redistribution requires a copy of the agreement, a
+             "Krea" prefix in derived model names, and this notice:
+             "Krea 2 is licensed under the Krea 2 Community License Agreement.
+              For more information, visit https://krea.ai/krea-2-licensing."
+             Revenue at/above the threshold requires an enterprise license.
+
+2) Z-Image Turbo — Tongyi-MAI/Z-Image-Turbo
+   License : Apache License 2.0
+   URL     : https://huggingface.co/Tongyi-MAI/Z-Image-Turbo
+   Includes: Qwen3-4B text encoder (Apache-2.0, Alibaba Cloud) and FLUX.1
+             autoencoder (Apache-2.0, Black Forest Labs). Attribution required.
+
+3) MOSS-Image SFT — OpenMOSS-Team/MOSS-Image-SFT
+   License : Apache License 2.0
+   URL     : https://huggingface.co/OpenMOSS-Team/MOSS-Image-SFT
+   Notes   : weights and bundled inference code under Apache-2.0.
+
+4) 4x-UltraSharp — Kim2091/UltraSharp
+   License : CC BY-NC-SA 4.0 — NON-COMMERCIAL
+   URL     : https://huggingface.co/Kim2091/UltraSharp
+   Notes   : the author states the model may not be used commercially without
+             separate permission. If you need commercial upscaling, use a
+             permissively licensed alternative such as Real-ESRGAN x4plus
+             (BSD-3-Clause) instead.
+
+ComfyUI itself (https://github.com/comfyanonymous/ComfyUI) is GPL-3.0; this
+project only talks to it over its local HTTP API and does not redistribute it.
+
+Trademarks (Krea, Alibaba/Qwen, Black Forest Labs/FLUX, OpenMOSS, etc.) belong
+to their respective owners. This project is a technical demo with no affiliation
+or endorsement.

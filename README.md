@@ -57,6 +57,8 @@ $env:EASYAI_PORT = 7860
 python server.py
 ```
 
+On Windows you can also run `start.bat`, which sets these variables for you.
+
 Open `http://127.0.0.1:7860` in your browser.
 
 ### Model layout

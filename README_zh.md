@@ -56,6 +56,8 @@ $env:EASYAI_PORT = 7860
 python server.py
 ```
 
+Windows 用户也可以直接运行 `start.bat`，它会自动设置上述环境变量。
+
 浏览器打开 `http://127.0.0.1:7860`。
 
 ### 模型布局

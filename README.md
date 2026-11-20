@@ -1,33 +1,37 @@
 # ComfyUI Image Studio
 
-一个把 [ComfyUI](https://github.com/comfyanonymous/ComfyUI) 生图能力包装成**极简中文 Web 界面**的本地部署方案，面向 RTX 4070 Laptop 8GB 这类消费级显卡。
+English | [简体中文](README_zh.md)
 
-手机连同一 Wi-Fi 即可访问；所有引导文字、按钮、滑杆刻度都与后端实际执行的参数一致——界面怎么写，后端就怎么跑，不偷改参数。
+A local deployment that wraps [ComfyUI](https://github.com/comfyanonymous/ComfyUI) image generation into a **minimal Chinese-language web UI**, tuned for consumer GPUs such as the RTX 4070 Laptop 8GB.
 
-## 功能
+Open it from your phone on the same Wi-Fi. Every hint, button, and slider label matches what the backend actually executes — the UI never silently changes parameters.
 
-- **三个生图引擎**，界面上一键切换：
-  | 引擎 | 定位 | 实测速度 (8GB) |
+## Features
+
+- **Three generation engines**, switchable in one click:
+
+  | Engine | Role | Measured speed (8GB) |
   |---|---|---|
-  | Krea 2 Turbo | 艺术旗舰，1920×1080 | ~50 s/张 |
-  | Z-Image Turbo | 极速，1280×720，10 步 | 8~15 s/张 |
-  | MOSS-Image | 文字排版/中文渲染最强，1280×720 | ~30 s/张 |
+  | Krea 2 Turbo | Artistic flagship, 1920×1080 | ~50 s/image |
+  | Z-Image Turbo | Fast, 1280×720, 10 steps | 8–15 s/image |
+  | MOSS-Image | Best for typography / Chinese text, 1280×720 | ~30 s/image |
 
-最高分辨率 3840×2160（Krea 2）。各引擎分辨率见下方表格。
-- 文生图 / 图生图重塑（人物一致性 LoRA 仅 Krea 2 生效）
-- 四档分辨率 + 异步轮询 + 画廊
-- ESRGAN 4× 超分（4x-UltraSharp）
-- 端口被占用自动顺延，页面显示的手机地址始终跟随真实端口
+  Maximum resolution: 3840×2160 (Krea 2). See the resolution table below for per-engine sizes.
 
-## 快速开始
+- Text-to-image / image-to-image restyling (identity LoRA only with Krea 2)
+- Four resolution tiers + async polling + gallery
+- ESRGAN 4× upscaling (4x-UltraSharp)
+- Automatic port fallback; the phone URL shown on the page always follows the real port
 
-### 前置条件
+## Quick start
 
-1. 一台带 NVIDIA 显卡的 Windows 机器（实测 RTX 4070 Laptop 8GB）
-2. Python 3.12 + CUDA 版 PyTorch
-3. 一个装好模型的 ComfyUI（见下）
+### Prerequisites
 
-### 安装
+1. A Windows machine with an NVIDIA GPU (tested on RTX 4070 Laptop 8GB)
+2. Python 3.12 with CUDA build of PyTorch
+3. A ComfyUI installation with the models below
+
+### Install
 
 ```bash
 git clone https://github.com/wuuwuu26/comfyui-image-studio.git
@@ -35,17 +39,17 @@ cd comfyui-image-studio
 pip install fastapi uvicorn python-multipart requests pydantic
 ```
 
-### 配置
+### Configuration
 
-全部通过环境变量，不必改代码：
+Everything is configured via environment variables — no code edits:
 
-| 变量 | 说明 | 默认值 |
+| Variable | Meaning | Default |
 |---|---|---|
-| `EASYAI_ROOT` | 项目根目录 | 脚本所在目录 |
-| `COMFY_DIR` | ComfyUI 安装目录 | 项目上级目录的 `ComfyUI` |
-| `EASYAI_PORT` | Web 服务端口 | `7860`（占用则顺延 7861…） |
+| `EASYAI_ROOT` | Project root | directory of the script |
+| `COMFY_DIR` | ComfyUI install directory | `ComfyUI` next to the project |
+| `EASYAI_PORT` | Web server port | `7860` (falls back to 7861, 7862, …) |
 
-示例：
+Example:
 
 ```powershell
 $env:COMFY_DIR = "D:\ComfyUI"
@@ -53,11 +57,11 @@ $env:EASYAI_PORT = 7860
 python server.py
 ```
 
-浏览器打开 `http://127.0.0.1:7860`。
+Open `http://127.0.0.1:7860` in your browser.
 
-### 模型布局
+### Model layout
 
-`server.py` 启动时会检查以下权重是否存在且体积达标（不达标界面上会标注引擎未就绪）：
+On startup, `server.py` checks that the following weights exist and meet a minimum size (otherwise the UI marks that engine as not ready):
 
 ```
 ComfyUI/
@@ -74,44 +78,44 @@ ComfyUI/
 │   │   ├── qwen_image_vae.safetensors
 │   │   ├── z_image_ae.safetensors
 │   │   └── flux2-vae_small.safetensors
-│   ├── loras/                                     # 人物一致性 LoRA 放这里
+│   ├── loras/                                     # identity LoRAs go here
 │   └── upscale_models/4x-UltraSharp.pth
 ```
 
-## 调参记录（8GB 卡实测）
+## Tuning notes (measured on an 8GB card)
 
-这些是踩坑后定下来的值，写死在后端以保证界面与执行一致：
+These values were settled after trial and error and are fixed in the backend so the UI and execution always agree:
 
-- **Krea 2**：1920×1080，双阶段（潜空间 + 6 步精修），约 50 s/张，显存靠 `--lowvram` + 分块
-- **Z-Image**：1280×720，10 步，CFG 约 2.0，8~15 s/张——**默认首选**
-- **MOSS**：1280×720，中文文字渲染最强，约 30 s/张
-- **人物一致性**：只在 Krea 2 图生图模式生效，识别 `loras/` 里文件名含 `face/id/identity/character/人物/人脸/一致性` 等的 LoRA
-- **`ai_4k`（最高档）**：Krea 2 在该档输出 3840×2160，潜空间直接去噪、不接放大器，8GB 卡约 6~8 分钟/张；各引擎实际尺寸见下表
-- **不要用 GGUF / NVMe 换页**：8GB 卡上重模型反复换页会让 GPU 占用 100% 但功耗掉到 40W，直接卡死
+- **Krea 2**: 1920×1080, two-stage (latent + 6-step refinement), ~50 s/image, VRAM kept in check with `--lowvram` + tiling
+- **Z-Image**: 1280×720, 10 steps, CFG ~2.0, 8–15 s/image — **default choice**
+- **MOSS**: 1280×720, best Chinese text rendering, ~30 s/image
+- **Identity consistency**: only active in Krea 2 image-edit mode; picks LoRAs from `loras/` whose filenames contain `face/id/identity/character`, etc.
+- **`ai_4k` (top tier)**: Krea 2 produces 3840×2160 at this tier, direct latent denoising with no upscaler, ~6–8 min/image on 8GB; per-engine sizes below
+- **Avoid GGUF / NVMe paging**: on an 8GB card, repeatedly paging a large model leaves the GPU at 100% but ~40 W power draw, which stalls completely
 
-### 各引擎实际输出分辨率（16:9）
+### Actual output resolution per engine (16:9)
 
-| 档位 | Krea 2 | Z-Image | MOSS |
+| Tier | Krea 2 | Z-Image | MOSS |
 |---|---|---|---|
 | `fast_1k` | 1920×1080 | 1280×720 | 1280×720 |
 | `native_2k` | 2560×1440 | 1920×1080 | 1920×1080 |
 | `ai_4k` | 3840×2160 | 2560×1440 | 2560×1440 |
 
-> 本机最高分辨率 3840×2160（Krea 2 引擎），8GB 卡约 6~8 分钟/张。
-> Z-Image 8GB 显存上限约 3584×2016，默认限制在 2560×1440 作为速度与质量的平衡点。
-> 9:16 与 1:1 按比例换算（如 2160×3840、3840×3840）。
+> Maximum on this machine: 3840×2160 (Krea 2), ~6–8 min/image on 8GB.
+> Z-Image tops out around 3584×2016 on 8GB VRAM and is capped at 2560×1440 by default as a speed/quality balance.
+> 9:16 and 1:1 scale accordingly (e.g. 2160×3840, 3840×3840).
 
-ComfyUI 推荐启动参数（代码里已内置）：
+Recommended ComfyUI flags (already built into the code):
 
 ```
 --cuda-malloc --lowvram --reserve-vram 1.0
 --disable-pinned-memory --disable-fast-disk --disable-auto-launch
 ```
 
-## 技术栈
+## Stack
 
-FastAPI + 原生 JS 前端 + ComfyUI HTTP API（`/prompt` 提交 + `/history` 轮询）。无前端框架、无构建步骤，单文件 HTML 直接静态托管。
+FastAPI + vanilla JS frontend + ComfyUI HTTP API (`/prompt` to submit, `/history` to poll). No frontend framework, no build step — a single HTML file served statically.
 
-## 许可
+## License
 
 MIT
